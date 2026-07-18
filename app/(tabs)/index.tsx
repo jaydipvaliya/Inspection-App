@@ -7,7 +7,7 @@ import StatCard from '../../components/StatCard';
 import { SurveyStore } from '../../data/surveyStore';
 
 // Replace with your own details
-const STUDENT = { name: 'Your Name', roll: 'CS-2026-01', course: 'React Native Mini Project' };
+const STUDENT = { name: 'JAYDIP VALIYA', roll: 'SUK250054CE027', course: 'React Native App' };
 
 export default function Dashboard() {
   const router = useRouter();

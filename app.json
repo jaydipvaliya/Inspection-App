@@ -45,6 +45,12 @@
           "cameraPermission": "Allow the app to access your camera to capture survey photos."
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow the app to access your location to record survey site coordinates."
+        }
+      ],
       "@react-native-community/datetimepicker"
     ],
     "experiments": {

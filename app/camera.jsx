@@ -20,6 +20,7 @@ export default function CameraScreen() {
   const [cameraReady, setCameraReady] = useState(false);
   const [openingCamera, setOpeningCamera] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [facing, setFacing] = useState('back'); // NEW: tracks active camera side
   const [photoUri, setPhotoUri] = useState(DraftStore.get().photoUri);
   const [photoTime, setPhotoTime] = useState(DraftStore.get().photoTime);
   const cameraRef = useRef(null);
@@ -33,11 +34,15 @@ export default function CameraScreen() {
       }
     }
     setOpeningCamera(true);
-    // simulate camera warm-up so the loading indicator is meaningful
     setTimeout(() => {
       setOpeningCamera(false);
       setShowCamera(true);
     }, 700);
+  };
+
+  // NEW: toggle between back and front camera
+  const flipCamera = () => {
+    setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
   };
 
   const capturePhoto = async () => {
@@ -87,7 +92,7 @@ export default function CameraScreen() {
         <CameraView
           ref={cameraRef}
           style={{ flex: 1 }}
-          facing="back"
+          facing={facing}
           onCameraReady={() => setCameraReady(true)}
         />
         <View style={styles.captureBar}>
@@ -101,7 +106,10 @@ export default function CameraScreen() {
           >
             <View style={styles.shutterInner} />
           </Pressable>
-          <View style={{ width: 50 }} />
+          {/* NEW: flip button */}
+          <Pressable style={styles.flipBtn} onPress={flipCamera}>
+            <Ionicons name="camera-reverse" size={26} color="#fff" />
+          </Pressable>
         </View>
       </View>
     );
@@ -227,5 +235,14 @@ const styles = StyleSheet.create({
     height: 58,
     borderRadius: 29,
     backgroundColor: '#fff',
+  },
+  // NEW: flip button style (replaces the old empty spacer view)
+  flipBtn: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
