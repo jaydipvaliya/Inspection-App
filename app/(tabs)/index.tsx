@@ -1,98 +1,76 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import AppHeader from '../../components/AppHeader';
+import QuickActionCard from '../../components/QuickActionCard';
+import StatCard from '../../components/StatCard';
+import { SurveyStore } from '../../data/surveyStore';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+// Replace with your own details
+const STUDENT = { name: 'Your Name', roll: 'CS-2026-01', course: 'React Native Mini Project' };
 
-export default function HomeScreen() {
+export default function Dashboard() {
+  const router = useRouter();
+  const [surveys, setSurveys] = useState(SurveyStore.getAll());
+
+  useEffect(() => {
+    const unsub = SurveyStore.subscribe(() => setSurveys(SurveyStore.getAll()));
+    return unsub;
+  }, []);
+
+  const today = new Date().toDateString();
+  const todaysCount = surveys.filter((s) => new Date(s.date).toDateString() === today).length;
+  const recent = surveys.slice(0, 3);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
+      <AppHeader title={`Welcome, ${STUDENT.name}`} subtitle={STUDENT.course} />
+      <ScrollView contentContainerStyle={styles.body}>
+        <Text style={styles.sectionTitle}>Student Details</Text>
+        <View style={styles.detailBox}>
+          <Text style={styles.detailText}>Name: {STUDENT.name}</Text>
+          <Text style={styles.detailText}>Roll No: {STUDENT.roll}</Text>
+          <Text style={styles.detailText}>Project: {STUDENT.course}</Text>
+        </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <View style={styles.statsRow}>
+          <StatCard label="Today's Surveys" value={todaysCount} />
+          <StatCard label="Total Surveys" value={surveys.length} />
+        </View>
+
+        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <View style={styles.grid}>
+          <QuickActionCard icon="add-circle-outline" label="New Survey" onPress={() => router.push('/survey')} />
+          <QuickActionCard icon="camera-outline" label="Camera" color="#16a34a" onPress={() => router.push('/camera')} />
+          <QuickActionCard icon="location-outline" label="Location" color="#dc2626" onPress={() => router.push('/location')} />
+          <QuickActionCard icon="people-outline" label="Contacts" color="#9333ea" onPress={() => router.push('/contacts')} />
+        </View>
+
+        <Text style={styles.sectionTitle}>Recent Surveys</Text>
+        {recent.length === 0 ? (
+          <Text style={styles.emptyText}>No surveys yet. Create your first one!</Text>
+        ) : (
+          recent.map((s) => (
+            <View key={s.id} style={styles.recentCard}>
+              <Text style={styles.recentTitle}>{s.siteName}</Text>
+              <Text style={styles.recentSub}>{s.clientName} • {s.priority}</Text>
+            </View>
+          ))
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  body: { padding: 16, paddingBottom: 40 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1e293b', marginTop: 20, marginBottom: 10 },
+  detailBox: { backgroundColor: '#fff', borderRadius: 12, padding: 14, elevation: 1 },
+  detailText: { fontSize: 13, color: '#334155', marginBottom: 4 },
+  statsRow: { flexDirection: 'row', marginTop: 16 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  emptyText: { color: '#94a3b8', fontStyle: 'italic' },
+  recentCard: { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 10, elevation: 1 },
+  recentTitle: { fontSize: 14, fontWeight: '600', color: '#1e293b' },
+  recentSub: { fontSize: 12, color: '#64748b', marginTop: 2 },
 });
