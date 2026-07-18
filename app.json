@@ -51,6 +51,12 @@
           "locationAlwaysAndWhenInUsePermission": "Allow the app to access your location to record survey site coordinates."
         }
       ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Allow the app to access your contacts to link a site contact to this survey."
+        }
+      ],
       "@react-native-community/datetimepicker"
     ],
     "experiments": {
