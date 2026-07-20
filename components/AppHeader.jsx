@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { DrawerActions } from '@react-navigation/native';
+import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { ProfileStore } from '../data/profileStore';
+import { Theme } from '../constants/theme';
 
 export default function AppHeader({ title, subtitle, showMenu = true, showProfile = true }) {
   const navigation = useNavigation();
@@ -17,6 +17,7 @@ export default function AppHeader({ title, subtitle, showMenu = true, showProfil
   }, []);
 
   const initial = profile.name?.charAt(0)?.toUpperCase() || '?';
+  const hasPhoto = profile.photoUri && typeof profile.photoUri === 'string' && profile.photoUri.trim().length > 0;
 
   return (
     <View style={styles.header}>
@@ -24,10 +25,10 @@ export default function AppHeader({ title, subtitle, showMenu = true, showProfil
         {showMenu && (
           <Pressable
             onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-            style={styles.iconBtn}
+            style={({ pressed }) => [styles.iconBtn, pressed && { opacity: 0.6 }]}
             hitSlop={10}
           >
-            <Ionicons name="menu" size={22} color="#fff" />
+            <Ionicons name="menu-outline" size={24} color={Theme.colors.black} />
           </Pressable>
         )}
         <View style={{ flexShrink: 1 }}>
@@ -37,12 +38,14 @@ export default function AppHeader({ title, subtitle, showMenu = true, showProfil
       </View>
 
       {showProfile && (
-        <Pressable onPress={() => router.push('/profile')} style={styles.avatarBtn} hitSlop={10}>
-          {profile.photoUri ? (
-            <Image source={{ uri: profile.photoUri }} style={styles.avatarImage} />
-          ) : (
-            <Text style={styles.avatarText}>{initial}</Text>
-          )}
+        <Pressable onPress={() => router.push('/profile')} hitSlop={10}>
+          <View style={styles.avatarBtn}>
+            {hasPhoto ? (
+              <Image source={{ uri: profile.photoUri }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>{initial}</Text>
+            )}
+          </View>
         </Pressable>
       )}
     </View>
@@ -51,44 +54,31 @@ export default function AppHeader({ title, subtitle, showMenu = true, showProfil
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: '#2563eb',
     paddingTop: 56,
-    paddingBottom: 22,
-    paddingHorizontal: 18,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    backgroundColor: Theme.colors.bgPrimary,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    elevation: 4,
-    shadowColor: '#1e3a8a',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.borderLight,
   },
   leftRow: { flexDirection: 'row', alignItems: 'center', flexShrink: 1 },
-  iconBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  title: { color: '#fff', fontSize: 19, fontWeight: '700' },
-  subtitle: { color: '#dbeafe', fontSize: 12.5, marginTop: 2 },
+  iconBtn: { marginRight: 14, justifyContent: 'center', alignItems: 'center' },
+  title: { color: Theme.colors.black, fontSize: 20, fontWeight: '700', letterSpacing: -0.5 },
+  subtitle: { color: Theme.colors.textSecondary, fontSize: 13, marginTop: 1 },
   avatarBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.5)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Theme.colors.bgInput,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Theme.colors.border,
   },
   avatarImage: { width: '100%', height: '100%' },
-  avatarText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  avatarText: { color: Theme.colors.black, fontSize: 14, fontWeight: '700' },
 });

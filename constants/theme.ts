@@ -1,53 +1,69 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Clean White Minimal Theme — inspired by modern travel/utility app UI.
+ * White base, black accents, soft shadows, no color.
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+export const Theme = {
+  colors: {
+    bgPrimary: '#FFFFFF',
+    bgSecondary: '#F8F9FA',
+    bgInput: '#F1F3F5',
+    surface: '#FFFFFF',
 
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    black: '#1A1A1A',
+    textPrimary: '#1A1A1A',
+    textSecondary: '#4A5568',
+    textMuted: '#A0AEC0',
+    textOnDark: '#FFFFFF',
+
+    border: '#E2E8F0',
+    borderLight: '#EDF2F7',
+    divider: '#E2E8F0',
+
+    overlay: 'rgba(0,0,0,0.4)',
+    activeChip: '#1A1A1A',
   },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+
+  radius: { sm: 8, md: 12, lg: 16, xl: 20, xxl: 24, pill: 100 },
+
+  shadow: {
+    card: {
+      shadowColor: '#000000',
+      shadowOpacity: 0.05,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 2,
+    },
+    soft: {
+      shadowColor: '#000000',
+      shadowOpacity: 0.03,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 1,
+    },
   },
+} as const;
+
+export const PRIORITY_COLORS: Record<string, string> = {
+  Low: '#718096',
+  Medium: '#4A5568',
+  High: '#1A1A1A',
 };
 
 export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
+  ios: { sans: 'system-ui', serif: 'ui-serif', rounded: 'ui-rounded', mono: 'ui-monospace' },
+  default: { sans: 'normal', serif: 'serif', rounded: 'normal', mono: 'monospace' },
   web: {
     sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
     serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+    rounded: "'SF Pro Rounded', sans-serif",
+    mono: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
   },
 });
+
+export const Colors = {
+  light: { text: '#1A1A1A', background: '#FFFFFF', tint: '#1A1A1A', icon: '#6B7280', tabIconDefault: '#9CA3AF', tabIconSelected: '#1A1A1A' },
+  dark: { text: '#1A1A1A', background: '#FFFFFF', tint: '#1A1A1A', icon: '#6B7280', tabIconDefault: '#9CA3AF', tabIconSelected: '#1A1A1A' },
+};

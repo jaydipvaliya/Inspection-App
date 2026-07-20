@@ -1,239 +1,82 @@
 import { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Alert,
-} from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 import AppHeader from '../components/AppHeader';
 import { DraftStore } from '../data/draftStore';
+import { Theme } from '../constants/theme';
 
-// Generate a simple survey ID from the draft (site name + timestamp)
-const generateSurveyId = (draft) => {
-  const prefix = draft.siteName ? draft.siteName.substring(0, 3).toUpperCase() : 'SRV';
-  return `${prefix}-${Date.now().toString().slice(-6)}`;
-};
+const generateSurveyId = (d) => { const p = d.siteName ? d.siteName.substring(0, 3).toUpperCase() : 'SRV'; return `${p}-${Date.now().toString().slice(-6)}`; };
 
 export default function ClipboardScreen() {
-  const router = useRouter();
-  const [draft, setDraft] = useState(DraftStore.get());
+  const router = useRouter(); const [draft] = useState(DraftStore.get());
   const [surveyId] = useState(generateSurveyId(DraftStore.get()));
   const [notes, setNotes] = useState(DraftStore.get().notes || '');
   const [clipboardPreview, setClipboardPreview] = useState('');
 
-  useEffect(() => {
-    DraftStore.update({ surveyId });
-    checkClipboard();
-  }, []);
-
-  const checkClipboard = async () => {
-    const hasString = await Clipboard.hasStringAsync();
-    if (hasString) {
-      const text = await Clipboard.getStringAsync();
-      setClipboardPreview(text);
-    } else {
-      setClipboardPreview('');
-    }
-  };
-
-  const copyToClipboard = async (label, value) => {
-    if (!value) {
-      Alert.alert('Nothing to Copy', `${label} is not available yet.`);
-      return;
-    }
-    await Clipboard.setStringAsync(value);
-    setClipboardPreview(value);
-    Alert.alert('Copied', `${label} copied to clipboard.`);
-  };
-
-  const pasteNotes = async () => {
-    const hasString = await Clipboard.hasStringAsync();
-    if (!hasString) {
-      Alert.alert('Clipboard Empty', 'There is nothing to paste.');
-      return;
-    }
-    const text = await Clipboard.getStringAsync();
-    setNotes((prev) => (prev ? `${prev} ${text}` : text));
-  };
-
-  const clearClipboard = async () => {
-    await Clipboard.setStringAsync('');
-    setClipboardPreview('');
-    Alert.alert('Cleared', 'Clipboard data has been cleared.');
-  };
-
-  const handleNext = () => {
-    DraftStore.update({ notes: notes.trim() });
-    router.push('/preview');
-  };
-
-  const locationText = draft.location
-    ? `Lat: ${draft.location.latitude.toFixed(6)}, Lng: ${draft.location.longitude.toFixed(6)}`
-    : null;
+  useEffect(() => { DraftStore.update({ surveyId }); checkClipboard(); }, []);
+  const checkClipboard = async () => { const h = await Clipboard.hasStringAsync(); if (h) setClipboardPreview(await Clipboard.getStringAsync()); else setClipboardPreview(''); };
+  const copyTo = async (l, v) => { if (!v) { Alert.alert('Nothing to Copy'); return; } await Clipboard.setStringAsync(v); setClipboardPreview(v); Alert.alert('Copied', `${l} copied.`); };
+  const pasteNotes = async () => { const h = await Clipboard.hasStringAsync(); if (!h) { Alert.alert('Empty'); return; } const t = await Clipboard.getStringAsync(); setNotes(p => (p ? `${p} ${t}` : t)); };
+  const clearCB = async () => { await Clipboard.setStringAsync(''); setClipboardPreview(''); Alert.alert('Cleared'); };
+  const locText = draft.location ? `${draft.location.latitude.toFixed(6)}, ${draft.location.longitude.toFixed(6)}` : null;
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
-      <AppHeader title="Clipboard" subtitle="Copy survey data & add notes" />
+    <View style={styles.container}>
+      <AppHeader title="Clipboard" subtitle="Copy data & add notes" />
       <ScrollView contentContainerStyle={styles.body}>
+        <DataRow label="Survey ID" value={surveyId} onCopy={() => copyTo('Survey ID', surveyId)} />
+        <DataRow label="Contact" value={draft.contact?.number || 'Not selected'} onCopy={() => copyTo('Contact', draft.contact?.number)} />
+        <DataRow label="Location" value={locText || 'Not captured'} onCopy={() => copyTo('Location', locText)} />
 
-        {/* Survey ID */}
-        <View style={styles.card}>
-          <View style={styles.cardRow}>
-            <View>
-              <Text style={styles.cardLabel}>Survey ID</Text>
-              <Text style={styles.cardValue}>{surveyId}</Text>
-            </View>
-            <Pressable style={styles.copyBtn} onPress={() => copyToClipboard('Survey ID', surveyId)}>
-              <Ionicons name="copy-outline" size={18} color="#fff" />
-            </Pressable>
-          </View>
-        </View>
-
-        {/* Contact Number */}
-        <View style={styles.card}>
-          <View style={styles.cardRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.cardLabel}>Contact Number</Text>
-              <Text style={styles.cardValue}>
-                {draft.contact?.number || 'Not selected'}
-              </Text>
-            </View>
-            <Pressable
-              style={styles.copyBtn}
-              onPress={() => copyToClipboard('Contact Number', draft.contact?.number)}
-            >
-              <Ionicons name="copy-outline" size={18} color="#fff" />
-            </Pressable>
-          </View>
-        </View>
-
-        {/* Location */}
-        <View style={styles.card}>
-          <View style={styles.cardRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.cardLabel}>Current Location</Text>
-              <Text style={styles.cardValue} numberOfLines={1}>
-                {locationText || 'Not captured'}
-              </Text>
-            </View>
-            <Pressable
-              style={styles.copyBtn}
-              onPress={() => copyToClipboard('Location', locationText)}
-            >
-              <Ionicons name="copy-outline" size={18} color="#fff" />
-            </Pressable>
-          </View>
-        </View>
-
-        {/* Notes with paste */}
         <Text style={styles.sectionTitle}>Notes</Text>
-        <TextInput
-          style={styles.notesInput}
-          placeholder="Add site notes here..."
-          value={notes}
-          onChangeText={setNotes}
-          multiline
-          numberOfLines={4}
-        />
-        <View style={styles.notesActionsRow}>
-          <Pressable style={styles.pasteBtn} onPress={pasteNotes}>
-            <Ionicons name="clipboard-outline" size={16} color="#2563eb" />
-            <Text style={styles.pasteText}>Paste from Clipboard</Text>
-          </Pressable>
-        </View>
+        <TextInput style={styles.notesInput} placeholder="Add site notes..." placeholderTextColor={Theme.colors.textMuted} value={notes} onChangeText={setNotes} multiline numberOfLines={4} />
+        <Pressable style={({ pressed }) => [styles.outlineBtn, pressed && { opacity: 0.8 }]} onPress={pasteNotes}><Text style={styles.outlineBtnText}>Paste from Clipboard</Text></Pressable>
 
-        {/* Clipboard preview + clear */}
         <Text style={styles.sectionTitle}>Clipboard Contents</Text>
-        <View style={styles.previewBox}>
-          <Text style={styles.previewText} numberOfLines={2}>
-            {clipboardPreview || 'Clipboard is empty'}
-          </Text>
-        </View>
-        <Pressable style={styles.clearBtn} onPress={clearClipboard}>
-          <Ionicons name="trash-outline" size={16} color="#fff" />
-          <Text style={styles.clearText}>Clear Clipboard</Text>
-        </Pressable>
+        <View style={styles.previewBox}><Text style={styles.previewText} numberOfLines={2}>{clipboardPreview || 'Empty'}</Text></View>
+        <Pressable style={({ pressed }) => [styles.outlineBtn, pressed && { opacity: 0.8 }]} onPress={clearCB}><Text style={styles.outlineBtnText}>Clear Clipboard</Text></Pressable>
 
-        <Pressable style={styles.submitBtn} onPress={handleNext}>
-          <Text style={styles.submitText}>Next: Preview Survey →</Text>
+        <Pressable style={({ pressed }) => [styles.darkBtn, pressed && { opacity: 0.8 }]} onPress={() => { DraftStore.update({ notes: notes.trim() }); router.push('/preview'); }}>
+          <Text style={styles.darkBtnText}>Next: Preview</Text><Ionicons name="arrow-forward" size={16} color="#fff" />
         </Pressable>
       </ScrollView>
     </View>
   );
 }
 
+function DataRow({ label, value, onCopy }) {
+  return (
+    <View style={styles.card}>
+      <View style={{ flex: 1 }}><Text style={styles.cardLabel}>{label}</Text><Text style={styles.cardValue} numberOfLines={1}>{value}</Text></View>
+      <Pressable style={({ pressed }) => [styles.copyBtn, pressed && { opacity: 0.8 }]} onPress={onCopy}><Ionicons name="copy-outline" size={16} color="#fff" /></Pressable>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  body: { padding: 16, paddingBottom: 40 },
+  container: { flex: 1, backgroundColor: Theme.colors.bgSecondary }, body: { padding: 16, paddingBottom: 40 },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 12,
-    elevation: 1,
-  },
-  cardRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  cardLabel: { fontSize: 12, color: '#64748b' },
-  cardValue: { fontSize: 15, fontWeight: '600', color: '#1e293b', marginTop: 2 },
-  copyBtn: {
-    backgroundColor: '#2563eb',
-    padding: 10,
-    borderRadius: 10,
-  },
-  sectionTitle: { fontSize: 14, fontWeight: '700', color: '#1e293b', marginTop: 18, marginBottom: 8 },
-  notesInput: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    height: 90,
-    textAlignVertical: 'top',
-    fontSize: 14,
-  },
-  notesActionsRow: { flexDirection: 'row', marginTop: 10 },
-  pasteBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderWidth: 1,
-    borderColor: '#2563eb',
-    borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-  },
-  pasteText: { color: '#2563eb', fontWeight: '600', fontSize: 13 },
-  previewBox: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    minHeight: 50,
-  },
-  previewText: { color: '#334155', fontSize: 13 },
-  clearBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#dc2626',
-    borderRadius: 10,
-    paddingVertical: 10,
-    marginTop: 12,
-  },
-  clearText: { color: '#fff', fontWeight: '600' },
-  submitBtn: {
-    backgroundColor: '#2563eb',
-    borderRadius: 12,
+    backgroundColor: Theme.colors.surface,
+    borderRadius: Theme.radius.lg,
     padding: 16,
+    marginBottom: 10,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 26,
+    borderWidth: 1,
+    borderColor: Theme.colors.borderLight,
+    ...Theme.shadow.soft,
   },
-  submitText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  cardLabel: { fontSize: 11, color: Theme.colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 },
+  cardValue: { fontSize: 14, fontWeight: '600', color: Theme.colors.black, marginTop: 3 },
+  copyBtn: { backgroundColor: Theme.colors.black, padding: 10, borderRadius: 10 },
+  sectionTitle: { fontSize: 14, fontWeight: '700', color: Theme.colors.black, marginTop: 22, marginBottom: 10 },
+  notesInput: { backgroundColor: Theme.colors.bgInput, borderRadius: Theme.radius.md, padding: 14, height: 100, textAlignVertical: 'top', fontSize: 14, color: Theme.colors.black },
+  previewBox: { backgroundColor: Theme.colors.bgInput, borderRadius: Theme.radius.md, padding: 14, minHeight: 50 },
+  previewText: { color: Theme.colors.textSecondary, fontSize: 13 },
+  outlineBtn: { alignSelf: 'flex-start', paddingVertical: 9, paddingHorizontal: 16, borderRadius: Theme.radius.pill, borderWidth: 1, borderColor: Theme.colors.border, marginTop: 10 },
+  outlineBtnText: { color: Theme.colors.black, fontWeight: '600', fontSize: 13 },
+  darkBtn: { backgroundColor: Theme.colors.black, borderRadius: Theme.radius.md, padding: 16, alignItems: 'center', justifyContent: 'center', marginTop: 28, flexDirection: 'row', gap: 8 },
+  darkBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
 });
